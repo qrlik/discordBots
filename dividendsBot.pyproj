@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>e5435008-d514-4f82-b21b-bb069c134a25</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>seekingAlpha.py</StartupFile>
+    <StartupFile>dividendsBot.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
