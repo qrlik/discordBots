@@ -19,6 +19,7 @@ class divInfo:
     record = ''
     amount = 0.0
     yearYield = 0.0
+    divPercents = 0.0
     id = 0
     
 def __requestDivsTags():
