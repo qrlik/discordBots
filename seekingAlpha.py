@@ -3,6 +3,10 @@ import re
 import time
 from bs4 import BeautifulSoup
 
+__session = requests.Session() 
+__session.headers.update({ 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.9; rv:45.0) Gecko/20100101 Firefox/45.0' })
+__url = 'https://seekingalpha.com/dividends/dividend-news'
+
 class divInfo:
     def __eq__(self, other):
         return other and self.ticker == other.ticker and self.amount == other.amount
@@ -17,13 +21,9 @@ class divInfo:
     yearYield = 0.0
     id = 0
     
-def _requestDivsTags():
-    session = requests.Session() 
-    session.headers.update({ 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.9; rv:45.0) Gecko/20100101 Firefox/45.0' })
-    url = 'https://seekingalpha.com/dividends/dividend-news'
-
+def __requestDivsTags():
     try:
-        response = session.get(url)
+        response = __session.get(__url)
     except requests.exceptions.RequestException as e:
         print("Request error: ", e)
         return None
@@ -34,14 +34,14 @@ def _requestDivsTags():
         return None
     return divList.find_all('li', {'class': 'mc'})
 
-def _getDivsTags():
-    divsTags = _requestDivsTags()
+def __getDivsTags():
+    divsTags = __requestDivsTags()
     while not divsTags:
         sleep(10)
-        divsTags = _requestDivsTags()
+        divsTags = __requestDivsTags()
     return divsTags
 
-def _getIdAndBody(item):
+def __getIdAndBody(item):
     id = item.attrs.get('id', '')
     idSearch = re.search(r'\d{6,}$', id)
     if not idSearch:
@@ -59,7 +59,7 @@ def _getIdAndBody(item):
         return None
     return (id, ulBody)
 
-def _parseDiv(text, strings):
+def __parseDiv(text, strings):
     if re.search(r'had\s+declare[s\s]', text):
         return None
     if not re.search(r'declare[s\s]', text):
@@ -111,13 +111,13 @@ def _parseDiv(text, strings):
 def parseDivs():
     divsList = []
     divsSet = set()
-    divItems = _getDivsTags()
+    divItems = __getDivsTags()
     for item in divItems:
-        idAndBody = _getIdAndBody(item)
+        idAndBody = __getIdAndBody(item)
         if not idAndBody:
             continue
 
-        div = _parseDiv(idAndBody[1].text, idAndBody[1].strings)
+        div = __parseDiv(idAndBody[1].text, idAndBody[1].strings)
         if not div:
             continue
         div.id = idAndBody[0]
