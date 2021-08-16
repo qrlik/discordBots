@@ -1,35 +1,26 @@
 import tinkoff
-import seekingAlpha
 import yahoo
-
-class stockInfo:
-    def __init__(self, divInfo):
-        self.ticker = divInfo.ticker
-        self.div = divInfo
-    def __str__(self):
-        return self.name + '\t\t\t(' + self.ticker + ')\t' + str(self.isTinkoff) + '\t' + str(self.price) + '\t' + str(self.div.divPercents)
-    div = seekingAlpha.divInfo()
-    ticker = ''
-    name = ''
-    price = 0
-    isTinkoff = False
+import seekingAlpha
+import stockInfo
 
 def main():
+    stocks = stockInfo.loadCacheData()
     divStocks = seekingAlpha.parseDivs()
     ti = tinkoff.tinkoff()
-    stocks = []
     for divInfo in divStocks:
-        stock = stockInfo(divInfo)
+        stock = stockInfo.stockInfo(divInfo)
         if ti.getStock(stock.ticker):
             stock.isTinkoff = True
         stockNameAndPrice = yahoo.getStockNameAndPrice(stock.ticker)
+        if not stockNameAndPrice:
+            continue
         stock.name = stockNameAndPrice[0]
         stock.price = stockNameAndPrice[1]
         stock.div.divPercents = round(stock.div.amount / stock.price * 100, 2);
         stocks.append(stock)
 
-    for stock in stocks:
-        print(stock)
+    #stocksJson = json.dumps(stocks, default=lambda x: x.__dict__)
+    #utils.saveJsonFile(__cacheFileName, stocksJson)
 
 if __name__ == '__main__':
     main()

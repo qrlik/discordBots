@@ -1,3 +1,4 @@
+import divInfo
 import requests
 import re
 import time
@@ -7,21 +8,6 @@ __session = requests.Session()
 __session.headers.update({ 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.9; rv:45.0) Gecko/20100101 Firefox/45.0' })
 __url = 'https://seekingalpha.com/dividends/dividend-news'
 
-class divInfo:
-    def __eq__(self, other):
-        return other and self.ticker == other.ticker and self.amount == other.amount
-    def __hash__(self):
-        return hash((self.ticker, self.amount))
-
-    ticker = ''
-    payable = ''
-    exDiv = ''
-    record = ''
-    amount = 0.0
-    yearYield = 0.0
-    divPercents = 0.0
-    id = 0
-    
 def __requestDivsTags():
     try:
         response = __session.get(__url)
@@ -66,7 +52,7 @@ def __parseDiv(text, strings):
     if not re.search(r'declare[s\s]', text):
         return None
 
-    div = divInfo()
+    div = divInfo.divInfo()
     for string in strings:
         if not div.ticker:
             searchTicket = re.search(r'[A-Z]+\.?[A-Z]+$', string)

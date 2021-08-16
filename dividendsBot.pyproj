@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>e5435008-d514-4f82-b21b-bb069c134a25</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>dividendsBot.py</StartupFile>
+    <StartupFile>dividendsBot\dividendsBot.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -21,16 +21,26 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="dividendsBot.py" />
-    <Compile Include="seekingAlpha.py">
+    <Compile Include="dividendsBot\dividendsBot.py" />
+    <Compile Include="dividendsBot\divInfo.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="dividendsBot\seekingAlpha.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="dividendsBot\stockInfo.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="tinkoff.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="utils.py" />
     <Compile Include="yahoo.py">
       <SubType>Code</SubType>
     </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="dividendsBot\" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in

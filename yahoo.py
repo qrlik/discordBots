@@ -37,7 +37,7 @@ def __getStockNameAndPrice(ticker):
                 return None
     except requests.exceptions.RequestException as e:
         print('yahoo:__getStockNameAndPrice request error: ', e)
-    return ('ERROR', -1)
+    return -1
 
 def getStockNameAndPrice(ticker):
     ticker = __checkTicker(ticker)
@@ -45,6 +45,8 @@ def getStockNameAndPrice(ticker):
     while not data:
         time.sleep(10)
         data = __getStockNameAndPrice(ticker)
+    if data == -1:
+        return None
     return data
 
 
