@@ -12,13 +12,14 @@ def __requestDivsTags():
     try:
         response = __session.get(__url)
     except requests.exceptions.RequestException as e:
-        print("Request error: ", e)
+        print("seekingAlpha:__requestDivsTags request error: ", e)
         return None
 
     niceResponse = BeautifulSoup(response.text, features="lxml")
     divList = niceResponse.find('ul', {'class': 'mc-list'})
     if not divList:
-        return None
+        print("seekingAlpha:__requestDivsTags empty div list: ")
+        return -1
     return divList.find_all('li', {'class': 'mc'})
 
 def __getDivsTags():
@@ -26,6 +27,8 @@ def __getDivsTags():
     while not divsTags:
         sleep(10)
         divsTags = __requestDivsTags()
+    if divsTags == -1:
+        return []
     return divsTags
 
 def __getIdAndBody(item):
