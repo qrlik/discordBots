@@ -1,16 +1,24 @@
+import discord
 import tinkoff
 import yahoo
 import seekingAlpha
 import stockInfo
 import utils
+import os
 
-class dividendsBot:
-    def __init__(self):
-        data = utils.loadJsonFile(self.__cacheFileName)
-        lastPostedId = int(data.get('lastPostedId', 0))
-        
+class dividendsBot(discord.Client):
     __cacheFileName = 'dividendsBotCache'
+    __token = os.getenv('DISCORD_TOKEN')
     lastPostedId = 0
+
+    def __init__(self):
+        super().__init__()
+        data = utils.loadJsonFile(self.__cacheFileName)
+        self.lastPostedId = int(data.get('lastPostedId', 0))
+        super().run(self.__token)
+
+    async def on_ready(self):
+        print(f'{self.user} is connected \n')
 
 def main():
     bot = dividendsBot()
