@@ -18,7 +18,11 @@ class dividendsBot(discord.Client):
         super().run(self.__token)
 
     async def on_ready(self):
-        print(f'{self.user} is connected \n')
+        utils.log(f'{self.user} is connected', self)
+
+    async def on_error(self, event):
+        utils.log(event, self)
+
 
 def main():
     bot = dividendsBot()

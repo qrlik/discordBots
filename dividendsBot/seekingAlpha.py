@@ -3,6 +3,7 @@ import requests
 import re
 import time
 from bs4 import BeautifulSoup
+import utils
 
 __session = requests.Session() 
 __session.headers.update({ 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.9; rv:45.0) Gecko/20100101 Firefox/45.0' })
@@ -12,13 +13,13 @@ def __requestDivsTags():
     try:
         response = __session.get(__url)
     except requests.exceptions.RequestException as e:
-        print("seekingAlpha:__requestDivsTags request error: ", e)
+        utils.log("seekingAlpha:__requestDivsTags request error: " + e)
         return None
 
     niceResponse = BeautifulSoup(response.text, features="lxml")
     divList = niceResponse.find('ul', {'class': 'mc-list'})
     if not divList:
-        print("seekingAlpha:__requestDivsTags empty div list: ")
+        utils.log("seekingAlpha:__requestDivsTags empty div list")
         return -1
     return divList.find_all('li', {'class': 'mc'})
 
@@ -117,7 +118,3 @@ def parseDivs():
         divsSet.add(div)
         divsList.append(div)
     return divsList
-
-if __name__ == '__main__':
-    for div in parseDivs():
-        print(div.ticker + '\t' + str(div.amount) + '\t' + div.id + '  \t' + str(div.yearYield) + '  \t' + div.exDiv + '  \t' + div.record + '   \t' + div.payable)

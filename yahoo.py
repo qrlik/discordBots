@@ -32,11 +32,11 @@ def __getStockNameAndPrice(ticker):
             name = price['longName'] if price['longName'] else price['shortName']
             return (name, price['regularMarketPrice']['raw'])
         else:
-            print('yahoo:__getStockNameAndPrice ' + ticker + ' reason ' + response.reason)
+            utils.log('yahoo:__getStockNameAndPrice ' + ticker + ' reason ' + response.reason)
             if 'Not Found' not in response.reason:
                 return None
     except requests.exceptions.RequestException as e:
-        print('yahoo:__getStockNameAndPrice request error: ', e)
+        utils.log('yahoo:__getStockNameAndPrice request error: ' + e)
     return -1
 
 def getStockNameAndPrice(ticker):
@@ -48,13 +48,6 @@ def getStockNameAndPrice(ticker):
     if data == -1:
         return None
     return data
-
-
-
-
-
-
-
 
 #assetProfile
 #incomeStatementHistory

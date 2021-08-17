@@ -1,5 +1,6 @@
 import tinvest
 import time
+import utils
 #import datetime
 #from dateutil.relativedelta import relativedelta
 
@@ -10,7 +11,7 @@ class tinkoff:
             if stocks.status == 'Ok':
                 return stocks.payload.instruments;
         except tinvest.TinvestError as err:
-            print('tinkoff:getStocks error: ', err.response)
+            utils.log('getStocks error: ' + err.response, self)
         return None
 
     def __getStock(self, ticker):
@@ -23,7 +24,7 @@ class tinkoff:
                     return stock.payload.instruments[0];
                 return -1
         except tinvest.TinvestError as err:
-            print('tinkoff:getStock error: ', err.response)
+            utils.log('getStocks error: ' + err.response, self)
         return None
 
     def getStock(self, ticker):
