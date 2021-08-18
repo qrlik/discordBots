@@ -1,6 +1,7 @@
 import json
 import requests
 import time
+import utils
 from enum import Enum
 
 __API_URL = 'https://query2.finance.yahoo.com/'
@@ -29,6 +30,8 @@ def __getStockNameAndPrice(ticker):
         response = __session.get(url)
         if response.ok:
             price = response.json()['quoteSummary']['result'][0]['price']
+            if not price['regularMarketPrice'].get('raw'):
+                return -1
             name = price['longName'] if price['longName'] else price['shortName']
             return (name, price['regularMarketPrice']['raw'])
         else:
