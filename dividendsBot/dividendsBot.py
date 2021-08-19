@@ -71,5 +71,5 @@ def main():
 if __name__ == '__main__':
     try:
         main()
-    catch Exception as e:
+    except Exception as e:
         utils.log('main: error: ' + e)
