@@ -2,7 +2,7 @@ import divInfo
 import requests
 import re
 import time
-from bs4 import BeautifulSoup
+import bs4
 import utils
 
 __session = requests.Session() 
@@ -16,7 +16,7 @@ def __requestDivsTags():
         utils.log("seekingAlpha:__requestDivsTags request error: " + e)
         return None
 
-    niceResponse = BeautifulSoup(response.text, features="lxml")
+    niceResponse = bs4.BeautifulSoup(response.text, features="lxml")
     divList = niceResponse.find('ul', {'class': 'mc-list'})
     if not divList:
         utils.log("seekingAlpha:__requestDivsTags empty div list")
@@ -48,14 +48,15 @@ def __getIdAndBody(item):
         return None
     return (id, ulBody)
 
-def __parseDiv(text, strings):
+def __parseDiv(tag):
+    text = tag.text
     if re.search(r'had\s+declare[s\s]', text):
         return None
     if not re.search(r'declare[s\s]', text):
         return None
 
     div = divInfo.divInfo()
-    for string in strings:
+    for string in tag.strings:
         if not div.ticker:
             searchTicket = re.search(r'[A-Z]+\.?[A-Z]+$', string)
             if searchTicket:
@@ -93,6 +94,12 @@ def __parseDiv(text, strings):
         if div.payable or div.record or div.exDiv:
             break
 
+    for element in tag.find('li'):
+        if type(element) == bs4.Tag:
+            if element.attrs.get('target', '') == '_blank':
+                div.link = element.attrs.get('href', '')
+                break
+
     if not div.ticker or not div.amount:
         return None
     return div
@@ -106,7 +113,7 @@ def parseDivs():
         if not idAndBody:
             continue
 
-        div = __parseDiv(idAndBody[1].text, idAndBody[1].strings)
+        div = __parseDiv(idAndBody[1])
         if not div:
             continue
         div.id = idAndBody[0]

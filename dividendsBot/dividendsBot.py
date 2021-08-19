@@ -69,4 +69,7 @@ def main():
     bot.run()
 
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    catch Exception as e:
+        utils.log('main: error: ' + e)
