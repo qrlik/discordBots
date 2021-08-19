@@ -31,10 +31,10 @@ def __getStock(ticker):
     return None
 
 def getStock(ticker):
-    stock = tinkoff.__getStock(ticker)
+    stock = __getStock(ticker)
     while not stock:
         sleep(10)
-        stock = tinkoff.__getStock(ticker)
+        stock = __getStock(ticker)
     if stock == -1:
         return None
     return stock

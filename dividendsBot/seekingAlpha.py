@@ -20,7 +20,7 @@ def __requestDivsTags():
     divList = niceResponse.find('ul', {'class': 'mc-list'})
     if not divList:
         utils.log("seekingAlpha:__requestDivsTags empty div list")
-        return -1
+        return None
     return divList.find_all('li', {'class': 'mc'})
 
 def __getDivsTags():
@@ -28,8 +28,6 @@ def __getDivsTags():
     while not divsTags:
         sleep(10)
         divsTags = __requestDivsTags()
-    if divsTags == -1:
-        return []
     return divsTags
 
 def __getIdAndBody(item):
