@@ -9,11 +9,14 @@ class stockInfo:
     def __hash__(self):
         return hash(self.div)
     def __str__(self):
-        result = self.name + ' (' + self.ticker + ') ' + self.price + '$'
-        if isTinkoff:
+        result = self.name + ' (' + self.ticker + ') ' + str(self.price) + '$'
+        if self.isTinkoff:
             result += ' - **Tinkoff**' 
-        result += '\n' + str(div)
+        result += '\n' + str(self.div)
         return result
+
+    def isMention(self):
+        return self.isTinkoff and self.div.percents >= 2.0
 
     div = divInfo.divInfo()
     ticker = ''

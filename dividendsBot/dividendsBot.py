@@ -11,12 +11,13 @@ class dividendsBot(discord.Client):
     __cacheFileName = 'dividendsBotCache'
     __token = os.getenv('DISCORD_TOKEN')
     __channel = None
-    __lastPostedId = 0
+    __lastPostedId = ''
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         data = utils.loadJsonFile(self.__cacheFileName)
-        self.__lastPostedId = int(data.get('lastPostedId', 0))
+        if data:
+            self.__lastPostedId = data.get('lastPostedId', '')
 
     def __parseDivs(self):
         stocks = []
@@ -44,7 +45,8 @@ class dividendsBot(discord.Client):
         while True:
             stocks = self.__parseDivs()
             for stock in reversed(stocks):
-                await self.__channel.send('```' + str(stock) + '```')
+                message = '@everyone\n' + str(stock) if stock.isMention() else str(stock)
+                await self.__channel.send(embed = discord.Embed(colour = 1327910, description = message))
                 self.__lastPostedId = stock.div.id
                 self.__saveCache()
             await asyncio.sleep(300)
@@ -63,7 +65,7 @@ class dividendsBot(discord.Client):
         super().run(self.__token)
 
 def main():
-    bot = dividendsBot()
+    bot = dividendsBot(allowed_mentions = discord.AllowedMentions(everyone = True))
     bot.run()
 
 if __name__ == '__main__':
