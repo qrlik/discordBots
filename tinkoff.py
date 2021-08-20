@@ -5,7 +5,7 @@ import utils
 #import datetime
 #from dateutil.relativedelta import relativedelta
 
-__TOKEN = os.getenv('TINKOFF_SANDBOX_TOKEN')
+__TOKEN = os.getenv('TINVEST_SANDBOX_TOKEN')
 __client = tinvest.SyncClient(token = __TOKEN, use_sandbox = True);
 
 def getStocks():
