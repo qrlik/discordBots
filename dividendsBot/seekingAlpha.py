@@ -58,7 +58,7 @@ def __parseDiv(tag):
     div = divInfo.divInfo()
     for string in tag.strings:
         if not div.ticker:
-            searchTicket = re.search(r'[A-Z]+\.?[A-Z]+$', string)
+            searchTicket = re.search(r'[A-Z]+(\.[A-Z]+)?$', string)
             if searchTicket:
                 div.ticker = searchTicket.group(0)
             continue
