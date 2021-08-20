@@ -108,7 +108,7 @@ def parseDivs():
     divsList = []
     divsSet = set()
     divItems = __getDivsTags()
-    for item in divItems:
+    for item in reversed(divItems):
         idAndBody = __getIdAndBody(item)
         if not idAndBody:
             continue
@@ -121,5 +121,5 @@ def parseDivs():
         if div in divsSet:
             continue
         divsSet.add(div)
-        divsList.append(div)
+        divsList.insert(0, div)
     return divsList
