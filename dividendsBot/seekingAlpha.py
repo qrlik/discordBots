@@ -13,7 +13,7 @@ def __requestDivsTags():
     try:
         response = __session.get(__url)
     except requests.exceptions.RequestException as e:
-        utils.log("seekingAlpha:__requestDivsTags request error: " + e)
+        utils.log("seekingAlpha:__requestDivsTags request error: " + str(e))
         return None
 
     niceResponse = bs4.BeautifulSoup(response.text, features="lxml")
@@ -31,15 +31,16 @@ def __getDivsTags():
     return divsTags
 
 def __getIdAndBody(item):
-    id = item.attrs.get('id', '')
-    idSearch = re.search(r'\d{6,}$', id)
+    mediaBody = item.find('div', {'class': 'media-body'})
+    if not mediaBody:
+        return None
+
+    id = mediaBody.find('span', {'class': 'item-date'}).text;
+    idSearch = re.search(r'\d{1,2}:\d\d.*$', id)
     if not idSearch:
         return None
     id = idSearch.group(0)
 
-    mediaBody = item.find('div', {'class': 'media-body'})
-    if not mediaBody:
-        return None
     hiddenBody = mediaBody.find('div', {'class': 'bullets item-summary hidden'})
     if not hiddenBody:
         return None
@@ -51,6 +52,8 @@ def __getIdAndBody(item):
 def __parseDiv(tag):
     text = tag.text
     if re.search(r'had\s+declare[s\s]', text):
+        return None
+    if re.search(r'not\s+declare[s\s]', text):
         return None
     if not re.search(r'declare[s\s]', text):
         return None

@@ -12,18 +12,20 @@ class dividendsBot(discord.Client):
     __token = os.getenv('DISCORD_TOKEN')
     __channel = None
     __lastPostedId = ''
+    __lastPostedTicker = ''
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         data = utils.loadJsonFile(self.__cacheFileName)
         if data:
             self.__lastPostedId = data.get('lastPostedId', '')
+            self.__lastPostedTicker = data.get('lastPostedTicker', '')
 
     def __parseDivs(self):
         stocks = []
         divStocks = seekingAlpha.parseDivs()
         for divInfo in divStocks:
-            if divInfo.id == self.__lastPostedId:
+            if divInfo.id == self.__lastPostedId and divInfo.ticker == self.__lastPostedTicker:
                 break
 
             stock = stockInfo.stockInfo(divInfo)
@@ -33,13 +35,13 @@ class dividendsBot(discord.Client):
             if tinkoff.getStock(stock.ticker):
                 stock.isTinkoff = True
             stock.name = stockNameAndPrice[0]
-            stock.price = stockNameAndPrice[1]
+            stock.price = round(stockNameAndPrice[1], 2)
             stock.div.percents = round(stock.div.amount / stock.price * 100, 2);
             stocks.append(stock)
         return stocks
 
     def __saveCache(self):
-        utils.saveJsonFile(self.__cacheFileName, {'lastPostedId': self.__lastPostedId})
+        utils.saveJsonFile(self.__cacheFileName, {'lastPostedId': self.__lastPostedId, 'lastPostedTicker': self.__lastPostedTicker})
         
     async def __dividendsTask(self):
         while True:
@@ -48,8 +50,9 @@ class dividendsBot(discord.Client):
                 message = '@everyone\n' + str(stock) if stock.isMention() else str(stock)
                 await self.__channel.send(embed = discord.Embed(colour = 1327910, description = message))
                 self.__lastPostedId = stock.div.id
+                self.__lastPostedTicker = stock.ticker
                 self.__saveCache()
-            await asyncio.sleep(300)
+            await asyncio.sleep(150)
 
     async def on_ready(self):
         utils.log(f'{self.user} is connected', self)
@@ -72,4 +75,4 @@ if __name__ == '__main__':
     try:
         main()
     except Exception as e:
-        utils.log('main: error: ' + e)
+        utils.log('main: error: ' + str(e))

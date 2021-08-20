@@ -39,7 +39,7 @@ def __getStockNameAndPrice(ticker):
             if 'Not Found' not in response.reason:
                 return None
     except requests.exceptions.RequestException as e:
-        utils.log('yahoo:__getStockNameAndPrice request error: ' + e)
+        utils.log('yahoo:__getStockNameAndPrice request error: ' + str(e))
     return -1
 
 def getStockNameAndPrice(ticker):

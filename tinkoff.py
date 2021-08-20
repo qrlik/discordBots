@@ -14,7 +14,7 @@ def getStocks():
         if stocks.status == 'Ok':
             return stocks.payload.instruments;
     except tinvest.TinvestError as err:
-        utils.log('tinkoff:getStocks error: ' + err.response)
+        utils.log('tinkoff:getStocks error: ' + str(err))
     return None
 
 def __getStock(ticker):
@@ -27,13 +27,13 @@ def __getStock(ticker):
                 return stock.payload.instruments[0];
             return -1
     except tinvest.TinvestError as err:
-        utils.log('tinkoff:getStocks error: ' + err.response)
+        utils.log('tinkoff:getStocks error: ' + str(err))
     return None
 
 def getStock(ticker):
     stock = __getStock(ticker)
     while not stock:
-        sleep(10)
+        time.sleep(10)
         stock = __getStock(ticker)
     if stock == -1:
         return None
