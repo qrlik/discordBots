@@ -1,4 +1,4 @@
-import divInfo
+from dividends import divInfo
 
 class stockInfo:
     def __init__(self, divInfo):

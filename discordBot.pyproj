@@ -5,7 +5,7 @@
     <ProjectGuid>e5435008-d514-4f82-b21b-bb069c134a25</ProjectGuid>
     <ProjectHome>
     </ProjectHome>
-    <StartupFile>dividendsBot\dividendsBot.py</StartupFile>
+    <StartupFile>discordBot.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -22,14 +22,14 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="dividendsBot\dividendsBot.py" />
-    <Compile Include="dividendsBot\divInfo.py">
+    <Compile Include="discordBot.py" />
+    <Compile Include="dividends\divInfo.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="dividendsBot\seekingAlpha.py">
+    <Compile Include="dividends\seekingAlpha.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="dividendsBot\stockInfo.py">
+    <Compile Include="dividends\stockInfo.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="tinkoff.py">
@@ -41,7 +41,7 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="dividendsBot\" />
+    <Folder Include="dividends\" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in

@@ -1,4 +1,4 @@
-import divInfo
+from dividends import divInfo
 import requests
 import re
 import time
