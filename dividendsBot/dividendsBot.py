@@ -7,16 +7,17 @@ import stockInfo
 import utils
 import os
 
-class dividendsBot(discord.Client):
-    __cacheFileName = 'dividendsBotCache'
+class discordBot(discord.Client):
     __token = os.getenv('DISCORD_TOKEN')
+    __config = {}
     __channel = None
     __lastPostedId = ''
     __lastPostedTicker = ''
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        data = utils.loadJsonFile(self.__cacheFileName)
+        self.__config = utils.loadJsonFile('config')
+        data = utils.loadJsonFile('botCache')
         if data:
             self.__lastPostedId = data.get('lastPostedId', '')
             self.__lastPostedTicker = data.get('lastPostedTicker', '')
@@ -52,12 +53,12 @@ class dividendsBot(discord.Client):
                 self.__lastPostedId = stock.div.id
                 self.__lastPostedTicker = stock.ticker
                 self.__saveCache()
-            await asyncio.sleep(150)
+            await asyncio.sleep(self.__config['loopTimeout'])
 
     async def on_ready(self):
         utils.log(f'{self.user} is connected', self)
-        guild = discord.utils.find(lambda g: g.name == 'Ivanvest', self.guilds)
-        self.__channel = discord.utils.find(lambda c: c.name == 'dividends', guild.channels)
+        guild = discord.utils.find(lambda g: g.id == self.__config['server'], self.guilds)
+        self.__channel = discord.utils.find(lambda c: c.id == self.__config['channel'], guild.channels)
         self.loop.create_task(self.__dividendsTask())
 
     async def on_error(self, event):
@@ -68,7 +69,7 @@ class dividendsBot(discord.Client):
         super().run(self.__token)
 
 def main():
-    bot = dividendsBot(allowed_mentions = discord.AllowedMentions(everyone = True))
+    bot = discordBot(allowed_mentions = discord.AllowedMentions(everyone = True))
     bot.run()
 
 if __name__ == '__main__':
