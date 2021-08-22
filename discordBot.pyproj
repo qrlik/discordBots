@@ -5,7 +5,7 @@
     <ProjectGuid>e5435008-d514-4f82-b21b-bb069c134a25</ProjectGuid>
     <ProjectHome>
     </ProjectHome>
-    <StartupFile>discordBot.py</StartupFile>
+    <StartupFile>ftd\ftd.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -32,6 +32,9 @@
     <Compile Include="dividends\stockInfo.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="ftd\ftd.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="tinkoff.py">
       <SubType>Code</SubType>
     </Compile>
@@ -42,6 +45,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="dividends\" />
+    <Folder Include="ftd\" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in
