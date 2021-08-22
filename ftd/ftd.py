@@ -4,6 +4,7 @@ import io
 import re
 import requests
 import utils
+import yahoo
 import zipfile
 
 __session = requests.Session() 
@@ -91,16 +92,29 @@ async def __getFileData(url):
         return []
     return data
 
-def __sortFtdData(data):
+async def __sortFtdData(data):
     rows = data.split('\n')
     result = {}
+    forDelete = []
     for row in rows:
         splitedRow = row.split('|')
         notDigitSearch = re.search(r'\D', splitedRow[0])
         if not notDigitSearch and splitedRow[0]:
             if result.setdefault(splitedRow[2], int(splitedRow[3])) < int(splitedRow[3]):
                 result[splitedRow[2]] = int(splitedRow[3])
-    return {}
+    print(str(len(result)))
+    index = 1
+    for ticker, amount in result.items():
+        print(index)
+        tickerFloat = await yahoo.getStockFreeFloat(ticker)
+        index += 1
+        if not tickerFloat:
+            forDelete.append(ticker)
+        else:
+            result[ticker] = round(amount / tickerFloat * 100, 2)
+    for ticker in forDelete:
+        result.pop(ticker)
+    return list(sorted(result.items(), key=lambda x: x[1]))
 
 async def parseFtd():
     data = await __getData()
@@ -110,7 +124,7 @@ async def parseFtd():
         if ftd:
             dataStr = await __getFileData(ftd.url)
             if dataStr:
-                ftd.data = __sortFtdData(dataStr)
+                ftd.data = await __sortFtdData(dataStr)
                 ftdData.append(ftd)
     return ftdData
 

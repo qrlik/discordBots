@@ -1,6 +1,6 @@
 import json
 import requests
-import time
+import asyncio
 import utils
 from enum import Enum
 
@@ -14,9 +14,11 @@ __session.headers.update({ 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X
 class eModule(Enum):
     PRICE = 1
     FINANCIAL = 2
+    STATISTIC = 3
 
 moduleDict = {eModule.PRICE: 'price',
-              eModule.FINANCIAL: 'financialData'}
+              eModule.FINANCIAL: 'financialData',
+              eModule.STATISTIC: 'defaultKeyStatistics'}
 
 def __getRequestUrl(ticker, module):
     return __API_URL + __SUMMARY + ticker + __MODULES + module
@@ -42,12 +44,39 @@ def __getStockNameAndPrice(ticker):
         utils.log('yahoo:__getStockNameAndPrice request error: ' + str(e))
     return -1
 
-def getStockNameAndPrice(ticker):
+def __getStockFloat(ticker):
+    try:
+        url = __getRequestUrl(ticker, moduleDict[eModule.STATISTIC])
+        response = __session.get(url)
+        if response.ok:
+            stats = response.json()['quoteSummary']['result'][0]['defaultKeyStatistics']
+            if not stats.get('floatShares') or not stats['floatShares'].get('raw'):
+                return -1
+            return stats['floatShares']['raw']
+        else:
+            utils.log('yahoo:__getStockFloat ' + ticker + ' reason ' + response.reason)
+            if 'Not Found' not in response.reason:
+                return None
+    except requests.exceptions.RequestException as e:
+        utils.log('yahoo:__getStockFloat request error: ' + str(e))
+    return -1
+
+async def getStockNameAndPrice(ticker):
     ticker = __checkTicker(ticker)
     data = __getStockNameAndPrice(ticker)
     while not data:
-        time.sleep(10)
+        await asyncio.sleep(10)
         data = __getStockNameAndPrice(ticker)
+    if data == -1:
+        return None
+    return data
+
+async def getStockFreeFloat(ticker):
+    ticker = __checkTicker(ticker)
+    data = __getStockFloat(ticker)
+    while not data:
+        await asyncio.sleep(10)
+        data = __getStockFloat(ticker)
     if data == -1:
         return None
     return data

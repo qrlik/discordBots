@@ -22,7 +22,7 @@ class discordBot(discord.Client):
             self.__lastPostedId = data.get('lastPostedId', '')
             self.__lastPostedTicker = data.get('lastPostedTicker', '')
 
-    def __parseDivs(self):
+    async def __parseDivs(self):
         stocks = []
         divStocks = seekingAlpha.parseDivs()
         for divInfo in divStocks:
@@ -30,7 +30,7 @@ class discordBot(discord.Client):
                 break
 
             stock = stockInfo.stockInfo(divInfo)
-            stockNameAndPrice = yahoo.getStockNameAndPrice(stock.ticker)
+            stockNameAndPrice = await yahoo.getStockNameAndPrice(stock.ticker)
             if not stockNameAndPrice:
                 continue
             if tinkoff.getStock(stock.ticker):
@@ -46,7 +46,7 @@ class discordBot(discord.Client):
         
     async def __dividendsTask(self):
         while True:
-            stocks = self.__parseDivs()
+            stocks = await self.__parseDivs()
             for stock in reversed(stocks):
                 message = '@everyone\n' + str(stock) if stock.isMention() else str(stock)
                 await self.__channel.send(embed = discord.Embed(colour = self.__config['embedColor'], description = message))
