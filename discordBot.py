@@ -9,6 +9,7 @@ import os
 
 class discordBot(discord.Client):
     __token = os.getenv('DISCORD_TOKEN')
+    __cacheFileName = 'botCache'
     __config = {}
     __channel = None
     __lastPostedId = ''
@@ -17,7 +18,7 @@ class discordBot(discord.Client):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.__config = utils.loadJsonFile('config')
-        data = utils.loadJsonFile('botCache')
+        data = utils.loadJsonFile(self.__cacheFileName)
         if data:
             self.__lastPostedId = data.get('lastPostedId', '')
             self.__lastPostedTicker = data.get('lastPostedTicker', '')
