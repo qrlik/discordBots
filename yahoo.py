@@ -1,6 +1,7 @@
 import json
 import requests
 import asyncio
+import aiohttp
 import utils
 from enum import Enum
 
@@ -44,22 +45,23 @@ def __getStockNameAndPrice(ticker):
         utils.log('yahoo:__getStockNameAndPrice request error: ' + str(e))
     return -1
 
-def __getStockFloat(ticker):
+async def __getStocksFloat(tickers):
+    result = {}
     try:
-        url = __getRequestUrl(ticker, moduleDict[eModule.STATISTIC])
-        response = __session.get(url)
-        if response.ok:
-            stats = response.json()['quoteSummary']['result'][0]['defaultKeyStatistics']
-            if not stats.get('floatShares') or not stats['floatShares'].get('raw'):
-                return -1
-            return stats['floatShares']['raw']
-        else:
-            utils.log('yahoo:__getStockFloat ' + ticker + ' reason ' + response.reason)
-            if 'Not Found' not in response.reason:
-                return None
+        async with aiohttp.ClientSession() as session:
+            for ticker in tickers:
+                async with session.get(__getRequestUrl(ticker, moduleDict[eModule.STATISTIC])) as response:
+                    if response.ok:
+                        js = await response.json()
+                        if not js['quoteSummary']['result']:
+                            continue
+                        stats = js['quoteSummary']['result'][0]['defaultKeyStatistics']
+                        if not stats.get('floatShares') or not stats['floatShares'].get('raw'):
+                            continue
+                        result.setdefault(ticker, stats['floatShares']['raw'])
     except requests.exceptions.RequestException as e:
         utils.log('yahoo:__getStockFloat request error: ' + str(e))
-    return -1
+    return result
 
 async def getStockNameAndPrice(ticker):
     ticker = __checkTicker(ticker)
@@ -71,14 +73,10 @@ async def getStockNameAndPrice(ticker):
         return None
     return data
 
-async def getStockFreeFloat(ticker):
-    ticker = __checkTicker(ticker)
-    data = __getStockFloat(ticker)
-    while not data:
-        await asyncio.sleep(10)
-        data = __getStockFloat(ticker)
-    if data == -1:
-        return None
+async def getStocksFreeFloat(tickers):
+    for ticker in tickers:
+        ticker = __checkTicker(ticker)
+    data = await __getStocksFloat(tickers)
     return data
 
 #assetProfile

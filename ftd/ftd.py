@@ -94,39 +94,45 @@ async def __getFileData(url):
 
 async def __sortFtdData(data):
     rows = data.split('\n')
-    result = {}
-    forDelete = []
+    maxFtds = {}
     for row in rows:
         splitedRow = row.split('|')
         notDigitSearch = re.search(r'\D', splitedRow[0])
         if not notDigitSearch and splitedRow[0]:
-            if result.setdefault(splitedRow[2], int(splitedRow[3])) < int(splitedRow[3]):
-                result[splitedRow[2]] = int(splitedRow[3])
-    print(str(len(result)))
-    index = 1
-    for ticker, amount in result.items():
-        print(index)
-        tickerFloat = await yahoo.getStockFreeFloat(ticker)
-        index += 1
-        if not tickerFloat:
-            forDelete.append(ticker)
-        else:
-            result[ticker] = round(amount / tickerFloat * 100, 2)
-    for ticker in forDelete:
-        result.pop(ticker)
-    return list(sorted(result.items(), key=lambda x: x[1]))
+            if maxFtds.setdefault(splitedRow[2], int(splitedRow[3])) < int(splitedRow[3]):
+                maxFtds[splitedRow[2]] = int(splitedRow[3])
+
+    splitedFtds = utils.splitDict(maxFtds, 250)
+
+    tasks  = []
+    for ftds in splitedFtds:
+        tasks.append(asyncio.create_task(yahoo.getStocksFreeFloat(ftds)))
+        
+    floats = {}
+    for task in tasks:
+        freeFloatDict = await task
+        floats.update(freeFloatDict)
+        
+    result = []
+    for ticker, freeFloat in floats.items():
+        div = float(maxFtds[ticker]) / freeFloat
+        div100 = div * 100.0
+        r = round(div100, 2)
+        result.append((ticker, round(float(maxFtds[ticker]) / freeFloat * 100.0, 2)))
+    result.sort(key=lambda tup: tup[1], reverse=True)
+    return result
 
 async def parseFtd():
     data = await __getData()
-    ftdData = []
     for tag in data:
         ftd = __parseFtdInfo(tag)
         if ftd:
             dataStr = await __getFileData(ftd.url)
             if dataStr:
                 ftd.data = await __sortFtdData(dataStr)
-                ftdData.append(ftd)
-    return ftdData
+                with open(ftd.date + '.txt', 'x') as f:
+                    for tupl in ftd.data:
+                        f.write(tupl[0] + '\t\t' + str(tupl[1]) + '\n')
 
 
 if __name__ == '__main__':

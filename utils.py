@@ -1,6 +1,7 @@
 import datetime
 import json
 import os.path
+from itertools import islice
 
 def loadJsonFile(filename):
     try:
@@ -23,3 +24,10 @@ def log(error, obj = None):
     mode = 'a' if os.path.exists(file) else 'x'
     with open(file, mode) as f:
         f.write(logStr)
+
+def splitDict(data, size):
+    splitResult = []
+    it = iter(data)
+    for i in range(0, len(data), size):
+        splitResult.append({k:data[k] for k in islice(it, size)})
+    return splitResult
