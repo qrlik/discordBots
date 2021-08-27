@@ -41,33 +41,41 @@ def __getStockNameAndPrice(ticker):
             utils.log('yahoo:__getStockNameAndPrice ' + ticker + ' reason ' + response.reason)
             if 'Not Found' not in response.reason:
                 return None
-    except requests.exceptions.RequestException as e:
+    except Exception as e:
         utils.log('yahoo:__getStockNameAndPrice request error: ' + str(e))
     return -1
 
 async def __getStocksFloat(tickers):
     result = {}
-    try:
-        async with aiohttp.ClientSession() as session:
-            for ticker in tickers:
-                async with session.get(__getRequestUrl(ticker, moduleDict[eModule.STATISTIC])) as response:
-                    if response.ok:
-                        js = await response.json()
-                        if not js['quoteSummary']['result']:
-                            continue
-                        stats = js['quoteSummary']['result'][0]['defaultKeyStatistics']
-                        if not stats.get('floatShares') or not stats['floatShares'].get('raw'):
-                            continue
-                        result.setdefault(ticker, stats['floatShares']['raw'])
-    except requests.exceptions.RequestException as e:
-        utils.log('yahoo:__getStockFloat request error: ' + str(e))
+    async with aiohttp.ClientSession() as session:
+        for ticker in tickers:
+            while True:
+                try:
+                    async with session.get(__getRequestUrl(ticker, moduleDict[eModule.STATISTIC])) as response:
+                        if response.ok:
+                            js = await response.json()
+                            if not js['quoteSummary']['result']:
+                                result.setdefault(ticker, 'N/A')
+                            else:
+                                stats = js['quoteSummary']['result'][0]['defaultKeyStatistics']
+                                if not stats.get('floatShares') or not stats['floatShares'].get('raw'):
+                                    result.setdefault(ticker, 'N/A')
+                                else:
+                                    result.setdefault(ticker, stats['floatShares']['raw'])
+                            break
+                        elif 'Not Found' not in response.reason:
+                            await asyncio.sleep(3)
+                        else:
+                            break
+                except Exception as e:
+                    utils.log('yahoo:__getStockFloat request error: ' + str(e))
     return result
 
 async def getStockNameAndPrice(ticker):
     ticker = __checkTicker(ticker)
     data = __getStockNameAndPrice(ticker)
     while not data:
-        await asyncio.sleep(10)
+        await asyncio.sleep(3)
         data = __getStockNameAndPrice(ticker)
     if data == -1:
         return None

@@ -2,7 +2,7 @@ import asyncio
 import discord
 import tinkoff
 import yahoo
-from dividends import seekingAlpha
+import seekingAlpha
 from dividends import stockInfo
 import utils
 import os

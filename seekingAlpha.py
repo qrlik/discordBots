@@ -5,9 +5,21 @@ import time
 import bs4
 import utils
 
+from selenium import webdriver
+import chromedriver_binary
+
 __session = requests.Session() 
-__session.headers.update({ 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.9; rv:45.0) Gecko/20100101 Firefox/45.0' })
+__session.headers.update({ 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_5) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/12.1.1 Safari/605.1.15',
+                           'Accept-Language': 'en-US',
+                           'Referer': 'http://www.google.com/',
+                           'Accept': 'test/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'})
 __url = 'https://seekingalpha.com/dividends/dividend-news'
+
+class tickerInfo:
+    name = ''
+    ticker = ''
+    price = 0.0
+    freeFloat = 0
 
 def __requestDivsTags():
     try:
@@ -126,3 +138,29 @@ def parseDivs():
         divsSet.add(div)
         divsList.insert(0, div)
     return divsList
+
+def __getTickerInfo(ticker):
+    driver = webdriver.Chrome()
+    driver.get('https://seekingalpha.com/symbol/' + ticker + '/overview')
+
+    try:
+        response = __session.get('https://seekingalpha.com/symbol/' + ticker)
+    except requests.exceptions.RequestException as e:
+        utils.log("seekingAlpha:__getTickerInfo request error: " + str(e))
+        return None
+    
+    niceResponse = bs4.BeautifulSoup(response.text, features="lxml")
+    grid = niceResponse.find('div', {'class': 'root'})
+    tabContent = niceResponse.find('div', {'class': '__8f906-2Zlb9 __8f906-39OyF __8f906-2Fp2j'})
+    tabContent2 = niceResponse.find('div', {'class': '__8f906-1wxqY __8f906-Fx3Go' })
+    outstanding = tabContent2.find('td', { 'id': 'shareStatsShareOutstandingCurrent' })
+    for string in tabContent2.elements:
+        test = ''
+
+    if not divList:
+        utils.log("seekingAlpha:__requestDivsTags empty div list")
+        return None
+    return divList.find_all('li', {'class': 'mc'})
+
+if __name__ == '__main__':
+    __getTickerInfo('PRRWF')

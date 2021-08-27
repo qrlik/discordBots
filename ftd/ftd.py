@@ -3,6 +3,7 @@ import bs4
 import io
 import re
 import requests
+import tinkoff
 import utils
 import yahoo
 import zipfile
@@ -14,7 +15,7 @@ __url = 'https://www.sec.gov/'
 class ftdInfo:
     url = ''
     date = ''
-    data = {}
+    data = None
 
 def __getHtmlData():
     try:
@@ -102,25 +103,32 @@ async def __sortFtdData(data):
             if maxFtds.setdefault(splitedRow[2], int(splitedRow[3])) < int(splitedRow[3]):
                 maxFtds[splitedRow[2]] = int(splitedRow[3])
 
-    splitedFtds = utils.splitDict(maxFtds, 250)
+    #tempSplit = utils.splitDict(maxFtds, 250)
+    #tinkoffFtds = await tinkoff.getStocks(tempSplit[0])
 
-    tasks  = []
-    for ftds in splitedFtds:
-        tasks.append(asyncio.create_task(yahoo.getStocksFreeFloat(ftds)))
+    tinkoffFtds = await tinkoff.getStocks(maxFtds)
+    splitedTinkoff = utils.splitDict(tinkoffFtds, 250)
+
+    tasksFinal  = []
+    for ftdDict in splitedTinkoff:
+        tasksFinal.append(asyncio.create_task(yahoo.getStocksFreeFloat(ftdDict)))
         
-    floats = {}
-    for task in tasks:
+    finalDict = {}
+    for task in tasksFinal:
         freeFloatDict = await task
-        floats.update(freeFloatDict)
+        finalDict.update(freeFloatDict)
         
     result = []
-    for ticker, freeFloat in floats.items():
-        div = float(maxFtds[ticker]) / freeFloat
-        div100 = div * 100.0
-        r = round(div100, 2)
-        result.append((ticker, round(float(maxFtds[ticker]) / freeFloat * 100.0, 2)))
-    result.sort(key=lambda tup: tup[1], reverse=True)
-    return result
+    naResult = []
+    for ticker, freeFloat in finalDict.items():
+        if freeFloat == 'N/A':
+            naResult.append((ticker, tinkoffFtds[ticker], freeFloat))
+        else:
+            ftdPercents = float(tinkoffFtds[ticker]) / freeFloat * 100.0
+            result.append((ticker, tinkoffFtds[ticker], round(ftdPercents, 2)))
+    result.sort(key=lambda tup: tup[2], reverse=True)
+    naResult.sort(key=lambda tup: tup[1], reverse=True)
+    return (result, naResult)
 
 async def parseFtd():
     data = await __getData()
@@ -130,9 +138,12 @@ async def parseFtd():
             dataStr = await __getFileData(ftd.url)
             if dataStr:
                 ftd.data = await __sortFtdData(dataStr)
-                with open(ftd.date + '.txt', 'x') as f:
-                    for tupl in ftd.data:
-                        f.write(tupl[0] + '\t\t' + str(tupl[1]) + '\n')
+                with open('FTDs/' + ftd.date + '.txt', 'x') as f:
+                    for tupl in ftd.data[0]:
+                        f.write(tupl[0] + '\t\t' + str(tupl[1]) + '\t\t' + str(tupl[2]) + '\n')
+                    f.write('\n\n\n\n')
+                    for tupl in ftd.data[1]:
+                        f.write(tupl[0] + '\t\t' + str(tupl[1]) + '\t\t' + tupl[2] + '\n')
 
 
 if __name__ == '__main__':

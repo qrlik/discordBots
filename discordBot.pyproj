@@ -26,7 +26,7 @@
     <Compile Include="dividends\divInfo.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="dividends\seekingAlpha.py">
+    <Compile Include="seekingAlpha.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="dividends\stockInfo.py">
