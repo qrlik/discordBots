@@ -9,8 +9,12 @@ __API_URL = 'https://query2.finance.yahoo.com/'
 __SUMMARY = 'v10/finance/quoteSummary/'
 __MODULES = '?modules='
 
+__headers = { 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_5) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/12.1.1 Safari/605.1.15',
+              'Accept-Language': 'en-US',
+              'Referer': 'http://www.google.com/',
+              'Accept': 'test/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'}
 __session = requests.Session() 
-__session.headers.update({ 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.9; rv:45.0) Gecko/20100101 Firefox/45.0' })
+__session.headers.update(__headers)
 
 class eModule(Enum):
     PRICE = 1
@@ -45,32 +49,6 @@ def __getStockNameAndPrice(ticker):
         utils.log('yahoo:__getStockNameAndPrice request error: ' + str(e))
     return -1
 
-async def __getStocksFloat(tickers):
-    result = {}
-    async with aiohttp.ClientSession() as session:
-        for ticker in tickers:
-            while True:
-                try:
-                    async with session.get(__getRequestUrl(ticker, moduleDict[eModule.STATISTIC])) as response:
-                        if response.ok:
-                            js = await response.json()
-                            if not js['quoteSummary']['result']:
-                                result.setdefault(ticker, 'N/A')
-                            else:
-                                stats = js['quoteSummary']['result'][0]['defaultKeyStatistics']
-                                if not stats.get('floatShares') or not stats['floatShares'].get('raw'):
-                                    result.setdefault(ticker, 'N/A')
-                                else:
-                                    result.setdefault(ticker, stats['floatShares']['raw'])
-                            break
-                        elif 'Not Found' not in response.reason:
-                            await asyncio.sleep(3)
-                        else:
-                            break
-                except Exception as e:
-                    utils.log('yahoo:__getStockFloat request error: ' + str(e))
-    return result
-
 async def getStockNameAndPrice(ticker):
     ticker = __checkTicker(ticker)
     data = __getStockNameAndPrice(ticker)
@@ -79,12 +57,6 @@ async def getStockNameAndPrice(ticker):
         data = __getStockNameAndPrice(ticker)
     if data == -1:
         return None
-    return data
-
-async def getStocksFreeFloat(tickers):
-    for ticker in tickers:
-        ticker = __checkTicker(ticker)
-    data = await __getStocksFloat(tickers)
     return data
 
 #assetProfile

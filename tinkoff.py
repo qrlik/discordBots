@@ -1,7 +1,6 @@
 import os
 import tinvest
 import asyncio
-import time
 import utils
 #import datetime
 #from dateutil.relativedelta import relativedelta
@@ -14,28 +13,13 @@ def __getStock(ticker):
         stock = __client.get_market_search_by_ticker(ticker)
         if stock.status == 'Ok':
             if stock.payload.total > 1:
-                print('tinkoff:getStock multi stock: ' + ticker)
+                utils.log('tinkoff:getStock multi stock: ' + ticker)
             if stock.payload.total >= 1:
                 return stock.payload.instruments[0];
             return -1
     except Exception as err:
-        utils.log('tinkoff:getStocks error: ' + str(err))
+        utils.log('tinkoff:getStock error: ' + str(err))
     return None
-
-async def getStocks(tickers):
-    result = {}
-    counter = 0
-    for ticker, value in tickers.items():
-        if counter >= 75:
-            print('SLEEP\n\n\n\n')
-            counter = 0
-            await asyncio.sleep(10)
-        print('send '+ ticker + '\n')
-        counter += 1
-        searchResult = await getStock(ticker)
-        if searchResult:
-            result.setdefault(ticker, value)
-    return result
 
 async def getStock(ticker):
     stock = __getStock(ticker)
