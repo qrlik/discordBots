@@ -56,9 +56,9 @@ class discordBot(discord.Client):
         while True:
             stocks = await self.__parseDivs()
             for stock in reversed(stocks):
-                message = '@everyone @here\n' + \
-                    str(stock) if stock.isMention() else str(stock)
-                await self.__channel.send(embed=discord.Embed(colour=self.__config['embedColor'], description=message))
+                if not stock.isNeedToPost():
+                    continue
+                await self.__channel.send(embed=discord.Embed(colour=self.__config['embedColor'], description=str(stock)))
                 self.__saveToCache(stock)
             await asyncio.sleep(self.__config['loopTimeout'])
 
