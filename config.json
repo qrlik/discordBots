@@ -1,6 +1,7 @@
 {
     "loopTimeout": 150,
+    "cacheSize": 100,
     "server": 870648799310262302,
-    "channel": 877227809209204796,
+    "channel": 891683885799342191,
     "embedColor": 1327910
 }

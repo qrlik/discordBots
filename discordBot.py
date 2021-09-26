@@ -10,31 +10,29 @@ import os
 class discordBot(discord.Client):
     __token = os.getenv('DISCORD_TOKEN')
     __cacheFileName = 'botCache'
+    __cache = []
     __config = {}
     __channel = None
-    __lastPostedId = ''
-    __lastPostedTicker = ''
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.__config = utils.loadJsonFile('config')
         data = utils.loadJsonFile(self.__cacheFileName)
         if data:
-            self.__lastPostedId = data.get('lastPostedId', '')
-            self.__lastPostedTicker = data.get('lastPostedTicker', '')
+            self.__cache = data
 
     async def __parseDivs(self):
         stocks = []
         divStocks = seekingAlpha.parseDivs()
         for divInfo in divStocks:
-            if divInfo.id == self.__lastPostedId and divInfo.ticker == self.__lastPostedTicker:
-                break
+            if self.__isPosted(divInfo):
+                continue
 
             stock = stockInfo.stockInfo(divInfo)
             stockNameAndPrice = await yahoo.getStockNameAndPrice(stock.ticker)
             if not stockNameAndPrice:
                 continue
-            if tinkoff.getStock(stock.ticker):
+            if await tinkoff.getStock(stock.ticker):
                 stock.isTinkoff = True
             stock.name = stockNameAndPrice[0]
             stock.price = round(stockNameAndPrice[1], 2)
@@ -42,9 +40,17 @@ class discordBot(discord.Client):
             stocks.append(stock)
         return stocks
 
-    def __saveCache(self):
-        utils.saveJsonFile(self.__cacheFileName, {
-                           'lastPostedId': self.__lastPostedId, 'lastPostedTicker': self.__lastPostedTicker})
+    def __isPosted(self, divInfo):
+        for posted in self.__cache:
+            if [divInfo.ticker, divInfo.id, divInfo.amount] == posted:
+                return True
+        return False
+
+    def __saveToCache(self, stock):
+        self.__cache.append((stock.ticker, stock.div.id, stock.div.amount))
+        if len(self.__cache) > self.__config['cacheSize']:
+            self.__cache.pop(0)
+        utils.saveJsonFile(self.__cacheFileName, self.__cache)
 
     async def __dividendsTask(self):
         while True:
@@ -53,9 +59,7 @@ class discordBot(discord.Client):
                 message = '@everyone @here\n' + \
                     str(stock) if stock.isMention() else str(stock)
                 await self.__channel.send(embed=discord.Embed(colour=self.__config['embedColor'], description=message))
-                self.__lastPostedId = stock.div.id
-                self.__lastPostedTicker = stock.ticker
-                self.__saveCache()
+                self.__saveToCache(stock)
             await asyncio.sleep(self.__config['loopTimeout'])
 
     async def on_ready(self):

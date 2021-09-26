@@ -5,8 +5,7 @@
     <ProjectGuid>e5435008-d514-4f82-b21b-bb069c134a25</ProjectGuid>
     <ProjectHome>
     </ProjectHome>
-    <StartupFile>
-    </StartupFile>
+    <StartupFile>discordBot.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
