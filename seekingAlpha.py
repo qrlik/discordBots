@@ -14,6 +14,7 @@ __session.headers.update({ 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X
                            'Referer': 'http://www.google.com/',
                            'Accept': 'test/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'})
 __url = 'https://seekingalpha.com/dividends/dividend-news'
+__priceUrl = 'https://finance.api.seekingalpha.com/v2/real-time-prices?symbols%5B%5D='
 
 class tickerInfo:
     name = ''
@@ -153,28 +154,26 @@ def parseDivs():
         divsList.insert(0, div)
     return divsList
 
-def __getTickerInfo(ticker):
-    driver = webdriver.Chrome()
-    driver.get('https://seekingalpha.com/symbol/' + ticker + '/overview')
-
+def __getTickerPriceAndName(ticker):
     try:
-        response = __session.get('https://seekingalpha.com/symbol/' + ticker)
+        response = __session.get(__priceUrl + ticker)
+        if response.ok:
+            responseJson = response.json()['data'][0]['attributes']
+            name = responseJson['name']
+            price = responseJson['last']
+            if not price:
+                utils.log("seekingAlpha:__getTickerPriceAndName not found: " + ticker)
+                return -1
+            return (name, price)
     except requests.exceptions.RequestException as e:
-        utils.log("seekingAlpha:__getTickerInfo request error: " + str(e))
-        return None
-    
-    niceResponse = bs4.BeautifulSoup(response.text, features="lxml")
-    grid = niceResponse.find('div', {'class': 'root'})
-    tabContent = niceResponse.find('div', {'class': '__8f906-2Zlb9 __8f906-39OyF __8f906-2Fp2j'})
-    tabContent2 = niceResponse.find('div', {'class': '__8f906-1wxqY __8f906-Fx3Go' })
-    outstanding = tabContent2.find('td', { 'id': 'shareStatsShareOutstandingCurrent' })
-    for string in tabContent2.elements:
-        test = ''
+        utils.log("seekingAlpha:__getTickerPriceAndName request error: " + str(e))
+    return None
 
-    if not divList:
-        utils.log("seekingAlpha:__requestDivsTags empty div list")
+async def getTickerPriceAndName(ticker):
+    data = __getTickerPriceAndName(ticker)
+    while not data:
+        await asyncio.sleep(3)
+        data = __getTickerPriceAndName(ticker)
+    if data == -1:
         return None
-    return divList.find_all('li', {'class': 'mc'})
-
-if __name__ == '__main__':
-    __getTickerInfo('PRRWF')
+    return data

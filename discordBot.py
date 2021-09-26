@@ -29,7 +29,7 @@ class discordBot(discord.Client):
                 continue
 
             stock = stockInfo.stockInfo(divInfo)
-            stockNameAndPrice = await yahoo.getStockNameAndPrice(stock.ticker)
+            stockNameAndPrice = await seekingAlpha.getTickerPriceAndName(stock.ticker)
             if not stockNameAndPrice:
                 continue
             if await tinkoff.getStock(stock.ticker):
