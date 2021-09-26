@@ -38,19 +38,21 @@ class discordBot(discord.Client):
                 stock.isTinkoff = True
             stock.name = stockNameAndPrice[0]
             stock.price = round(stockNameAndPrice[1], 2)
-            stock.div.percents = round(stock.div.amount / stock.price * 100, 2);
+            stock.div.percents = round(stock.div.amount / stock.price * 100, 2)
             stocks.append(stock)
         return stocks
 
     def __saveCache(self):
-        utils.saveJsonFile(self.__cacheFileName, {'lastPostedId': self.__lastPostedId, 'lastPostedTicker': self.__lastPostedTicker})
-        
+        utils.saveJsonFile(self.__cacheFileName, {
+                           'lastPostedId': self.__lastPostedId, 'lastPostedTicker': self.__lastPostedTicker})
+
     async def __dividendsTask(self):
         while True:
             stocks = await self.__parseDivs()
             for stock in reversed(stocks):
-                message = '@everyone\n' + str(stock) if stock.isMention() else str(stock)
-                await self.__channel.send(embed = discord.Embed(colour = self.__config['embedColor'], description = message))
+                message = '@everyone @here\n' + \
+                    str(stock) if stock.isMention() else str(stock)
+                await self.__channel.send(embed=discord.Embed(colour=self.__config['embedColor'], description=message))
                 self.__lastPostedId = stock.div.id
                 self.__lastPostedTicker = stock.ticker
                 self.__saveCache()
@@ -58,20 +60,24 @@ class discordBot(discord.Client):
 
     async def on_ready(self):
         utils.log(f'{self.user} is connected', self)
-        guild = discord.utils.find(lambda g: g.id == self.__config['server'], self.guilds)
-        self.__channel = discord.utils.find(lambda c: c.id == self.__config['channel'], guild.channels)
+        guild = discord.utils.find(
+            lambda g: g.id == self.__config['server'], self.guilds)
+        self.__channel = discord.utils.find(
+            lambda c: c.id == self.__config['channel'], guild.channels)
         self.loop.create_task(self.__dividendsTask())
 
     async def on_error(self, event):
-        __saveCache()
+        self.__saveCache()
         utils.log(event, self)
 
     def run(self):
         super().run(self.__token)
 
+
 def main():
-    bot = discordBot(allowed_mentions = discord.AllowedMentions(everyone = True))
+    bot = discordBot(allowed_mentions=discord.AllowedMentions(everyone=True))
     bot.run()
+
 
 if __name__ == '__main__':
     try:
