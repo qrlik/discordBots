@@ -42,12 +42,12 @@ class discordBot(discord.Client):
 
     def __isPosted(self, divInfo):
         for posted in self.__cache:
-            if [divInfo.ticker, divInfo.id, divInfo.amount] == posted:
+            if [divInfo.ticker, divInfo.amount] == posted:
                 return True
         return False
 
     def __saveToCache(self, stock):
-        self.__cache.append((stock.ticker, stock.div.id, stock.div.amount))
+        self.__cache.append((stock.ticker, stock.div.amount))
         if len(self.__cache) > self.__config['cacheSize']:
             self.__cache.pop(0)
         utils.saveJsonFile(self.__cacheFileName, self.__cache)

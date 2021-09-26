@@ -42,16 +42,20 @@ def __getDivsTags():
         divsTags = __requestDivsTags()
     return divsTags
 
-def __getIdAndBody(item):
+def __getTitleAndBody(item):
     mediaBody = item.find('div', {'class': 'media-body'})
     if not mediaBody:
         return None
 
-    id = mediaBody.find('span', {'class': 'item-date'}).text;
-    idSearch = re.search(r'\d{1,2}:\d\d.*$', id)
-    if not idSearch:
+    #id = mediaBody.find('span', {'class': 'item-date'}).text;
+    #idSearch = re.search(r'\d{1,2}:\d\d.*$', id)
+    #if not idSearch:
+    #    return None
+    #id = idSearch.group(0)
+
+    title = mediaBody.find('div', {'class': 'title'})
+    if not title:
         return None
-    id = idSearch.group(0)
 
     hiddenBody = mediaBody.find('div', {'class': 'bullets item-summary hidden'})
     if not hiddenBody:
@@ -59,15 +63,26 @@ def __getIdAndBody(item):
     ulBody = hiddenBody.find('ul')
     if not ulBody:
         return None
-    return (id, ulBody)
+    return (title.text, ulBody)
 
-def __parseDiv(tag):
+def __findDeclare(text):
+    if re.search(r'declare[s\s]', text):
+        return True
+    if re.search(r'increase[s\s]', text):
+        return True
+    if re.search(r'raise[s\s]', text):
+        return True
+    if re.search(r'lift[s\s]', text):
+        return True
+    return False
+
+def __parseDiv(title, tag):
     text = tag.text
     if re.search(r'had\s+declare[s\s]', text):
         return None
     if re.search(r'not\s+declare[s\s]', text):
         return None
-    if not re.search(r'declare[s\s]', text):
+    if not __findDeclare(title) and not __findDeclare(text):
         return None
 
     div = divInfo.divInfo()
@@ -124,14 +139,13 @@ def parseDivs():
     divsSet = set()
     divItems = __getDivsTags()
     for item in reversed(divItems):
-        idAndBody = __getIdAndBody(item)
-        if not idAndBody:
+        titleAndBody = __getTitleAndBody(item)
+        if not titleAndBody:
             continue
 
-        div = __parseDiv(idAndBody[1])
+        div = __parseDiv(titleAndBody[0], titleAndBody[1])
         if not div:
             continue
-        div.id = idAndBody[0]
 
         if div in divsSet:
             continue
