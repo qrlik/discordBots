@@ -43,16 +43,16 @@ def __getDivsTags():
         divsTags = __requestDivsTags()
     return divsTags
 
-def __getTitleAndBody(item):
+def __getTitleBodyId(item):
     mediaBody = item.find('div', {'class': 'media-body'})
     if not mediaBody:
         return None
 
-    #id = mediaBody.find('span', {'class': 'item-date'}).text;
-    #idSearch = re.search(r'\d{1,2}:\d\d.*$', id)
-    #if not idSearch:
-    #    return None
-    #id = idSearch.group(0)
+    id = mediaBody.find('span', {'class': 'item-date'}).text;
+    idSearch = re.search(r'\d{1,2}:\d\d.*$', id)
+    if not idSearch:
+        return None
+    id = idSearch.group(0)
 
     title = mediaBody.find('div', {'class': 'title'})
     if not title:
@@ -64,7 +64,7 @@ def __getTitleAndBody(item):
     ulBody = hiddenBody.find('ul')
     if not ulBody:
         return None
-    return (title.text, ulBody)
+    return (title.text, ulBody, id)
 
 def __findDeclare(text):
     if re.search(r'declare[s\s]', text):
@@ -140,13 +140,14 @@ def parseDivs():
     divsSet = set()
     divItems = __getDivsTags()
     for item in reversed(divItems):
-        titleAndBody = __getTitleAndBody(item)
-        if not titleAndBody:
+        titleBodyId = __getTitleBodyId(item)
+        if not titleBodyId:
             continue
 
-        div = __parseDiv(titleAndBody[0], titleAndBody[1])
+        div = __parseDiv(titleBodyId[0], titleBodyId[1])
         if not div:
             continue
+        div.id = titleBodyId[2]
 
         if div in divsSet:
             continue

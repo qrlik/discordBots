@@ -16,6 +16,7 @@ class divInfo:
     payable = ''
     exDiv = ''
     record = ''
+    id = ''
     link = ''
     amount = 0.0
     yearYield = 0.0

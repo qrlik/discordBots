@@ -25,7 +25,7 @@ class discordBot(discord.Client):
         stocks = []
         divStocks = seekingAlpha.parseDivs()
         for divInfo in divStocks:
-            if self.__isPosted(divInfo):
+            if self.__wasProcessed(divInfo):
                 continue
 
             stock = stockInfo.stockInfo(divInfo)
@@ -40,14 +40,14 @@ class discordBot(discord.Client):
             stocks.append(stock)
         return stocks
 
-    def __isPosted(self, divInfo):
+    def __wasProcessed(self, divInfo):
         for posted in self.__cache:
-            if [divInfo.ticker, divInfo.amount] == posted:
+            if divInfo.ticker == posted[0] and (divInfo.id == posted[1] or divInfo.amount == posted[2]):
                 return True
         return False
 
     def __saveToCache(self, stock):
-        self.__cache.append((stock.ticker, stock.div.amount))
+        self.__cache.append((stock.ticker, stock.div.id, stock.div.amount))
         if len(self.__cache) > self.__config['cacheSize']:
             self.__cache.pop(0)
         utils.saveJsonFile(self.__cacheFileName, self.__cache)
@@ -57,6 +57,7 @@ class discordBot(discord.Client):
             stocks = await self.__parseDivs()
             for stock in reversed(stocks):
                 if not stock.isNeedToPost():
+                    self.__saveToCache(stock)
                     continue
                 await self.__channel.send(embed=discord.Embed(colour=self.__config['embedColor'], description=str(stock)))
                 self.__saveToCache(stock)
